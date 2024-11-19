@@ -7,6 +7,9 @@ const app = express();
 //middleware
 app.use(express.json());
 
+//conmnectiong to mongo
+console.log(process.env.DB_Url)
+
 //routes
 app.use("/api/auth", authRoutes);
 
