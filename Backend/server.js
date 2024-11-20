@@ -12,6 +12,7 @@ const app = express();
 
 //middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
 
 //routes
 app.use("/api/auth", authRoutes);
@@ -27,7 +28,7 @@ app.get("/", (req, res) => {
 const port = process.env.PORT || 8100;
 app.listen(port, () => {
     console.log(`Server is up and running on port, ${port}`);
-    //conmnectiong to mongo
+    //connecting to mongo
     ApplicationDB();
 });
 
