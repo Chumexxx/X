@@ -1,6 +1,6 @@
 //import express
 const express = require("express");
-const authRoutes = require("./Routes/auth.routes.js");
+const authRoutes = require("./Routes/authRoutes.js");
 const dotenv = require("dotenv");
 const ApplicationDB = require("./Config/index.js");
 
@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 //create port and listen
 const port = process.env.PORT || 8100;
 app.listen(port, () => {
-    console.log("Server is up and running on port", port);
+    console.log(`Server is up and running on port, ${port}`);
     //conmnectiong to mongo
     ApplicationDB();
 });
