@@ -68,7 +68,7 @@ const logIn = async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, user?.password || "")
 
         if(!user || !isPasswordCorrect){
-            return res.status(400).json({error: "Invalid username or password"})
+          return res.status(400).json({error: "Invalid username or password"})
         }
 
         generateTokenAndSetCookie (user._id, res);
@@ -85,8 +85,8 @@ const logIn = async (req, res) => {
         });
 
     } catch(error) {
-        console.log("error in login controller", error.message);
-        res.status(500).json({ error: "internal Server Error" });
+      console.log("error in login controller", error.message);
+      res.status(500).json({ error: "internal Server Error" });
     }
 };
 
