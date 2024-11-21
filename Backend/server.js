@@ -3,6 +3,7 @@ const express = require("express");
 const authRoutes = require("./Routes/authRoutes.js");
 const dotenv = require("dotenv");
 const ApplicationDB = require("./Config/index.js");
+const cookieParser = require("cookie-parser");
 
 //configuring .env
 dotenv.config();
@@ -13,6 +14,7 @@ const app = express();
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser());
 
 //routes
 app.use("/api/auth", authRoutes);
