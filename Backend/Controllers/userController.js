@@ -1,118 +1,73 @@
-const User = require("../Models/userModel.js");
-const bcrypt = require("bcryptjs");
-const generateTokenAndSetCookie = require("../Lib/Utils/generateToken.js");
+//UserModel
+const User = require("../Models/userModel.js")
+//NotificationModel
+const Notification = require("../Models/notificationModel.js")
 
-const signUp = async (req, res) => {
-  try {
-    const { fullName, userName, email, password } = req.body;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "invalid email format" });
-    }
+const getUserProfile = async (req, res) => {
+    const {userName } = req.params;
 
-    const existingEmail = await User.findOne({ email });
-
-    if (existingEmail) {
-      return res.status(400).json({ error: "Email is already taken" });
-    }
-
-    const existingUser = await User.findOne({ userName });
-
-    if (existingUser) {
-      return res.status(400).json({ error: "userName is already taken" });
-    }
-
-    if (password.length < 6){
-        return res.status(400).json({error: "Password must be at least 6 characters long"})
-    }
-
-    //Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      fullName,
-      userName,
-      email,
-      password: hashedPassword,
-    });
-
-    if (newUser) {
-      generateTokenAndSetCookie(newUser._id, res);
-      await newUser.save();
-
-      res.status(201).json({
-        _id: newUser._id,
-        fullName: newUser.fullName,
-        userName: newUser.userName,
-        email: newUser.email,
-        followers: newUser.followers,
-        following: newUser.following,
-        profileImg: newUser.profileImg,
-        coverImg: newUser.coverImg,
-      });
-    } else {
-      res.status(400).json({ error: "invalid user data" });
-    }
-  } catch (error) {
-    console.log("error in signUp controller", error.message);
-    res.status(500).json({ error: "internal Server Error" });
-  }
-};
-
-const logIn = async (req, res) => {
     try{
-        const {userName, password} = req.body;
-        const user = await User.findOne({userName})
-        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "")
+        const user = await User.findOne({ userName }).select("-password");
+        if (!user) 
+            return res.status(400).json({message: "User not found"});
 
-        if(!user || !isPasswordCorrect){
-          return res.status(400).json({error: "Invalid username or password"})
-        }
-
-        generateTokenAndSetCookie (user._id, res);
-
-        res.status(200).json({
-        _id: user._id,
-        fullName: user.fullName,
-        userName: user.userName,
-        email: user.email,
-        followers: user.followers,
-        following: user.following,
-        profileImg: user.profileImg,
-        coverImg: user.coverImg,
-        });
-
-    } catch(error) {
-      console.log("error in login controller", error.message);
-      res.status(500).json({ error: "internal Server Error" });
-    }
-};
-
-const logOut = async (req, res) => {
-    try{
-        res.cookie("jwt","", {maxAge:0} )
-        res.status(200).json({message: "logged out successfully"})
-    }catch(error){
-        console.log("error in logout controller", error.message);
-        res.status(500).json({ error: "internal Server Error" });
-    }
-};
-
-const getMe = async (req, res) => {
-    try{
-        const user = await User.findById(req.user._id).select("-password")
         res.status(200).json(user);
-    } catch(error) {
-        console.log("Error in getMe controller", error.message);
-        res.status(500).json({error: "Internal server error"});
+    } catch (error) {
+        console.log("error in getUserProfile:", error.message)
+        res.status(500).json({error: error.message});
     }
 }
 
+const followOrUnfollowUser = async (req, res) => {
+    try{
+        const { id } = req.params;
+        const userToModify = await User.findById(id);
+        const currentUser = await User.findById(req.user._id);
+
+        if(id  === req.user._id.toString()) {
+            return res.status(400).json({error: "You cannot follow/unfollow yourself"});
+        }
+
+        if(!userToModify || !currentUser){
+            return res.status(400).json({ error: "User not found"});
+        }
+
+        const isFollowing = currentUser.following.includes(id);
+
+        if(isFollowing){
+            //unfollow the user
+            await User.findByIdAndUpdate(id, { $pull: {followers: req.user._id} });
+            await User.findByIdAndUpdate(req.user._id, { $pull: {following: id } });
+            
+            res.status(200).json({ message: " User unfollowed successfully"});
+        } else{
+            //follow the user
+            await User.findByIdAndUpdate(id, { $push: {followers: req.user._id} });
+            await User.findByIdAndUpdate(req.user._id, { $push: {following: id } });
+            //send follow notification
+            const newNotification = new Notification({
+                type: "follow",
+                from: req.user._id,
+                to: userToModify._id,
+            });
+            await newNotification.save();
+
+            //return the id of the user as a response
+            res.status(200).json({ message: " User followed successfully"});
+        }
+
+    } catch (error) {
+        console.log("error in followOrUnfollowUser:", error.message)
+        res.status(500).json({error: error.message});
+    }
+}
+
+// const getUserProfile = async (req, res) => {
+
+// }
+
 module.exports = {
-  logOut,
-  signUp,
-  logIn,
-  getMe
-};
+    getUserProfile,
+    followOrUnfollowUser
+}

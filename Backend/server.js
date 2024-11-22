@@ -1,9 +1,13 @@
 //import express
 const express = require("express");
-const userRoute = require("./Routes/userRoute.js");
 const dotenv = require("dotenv");
 const ApplicationDB = require("./Config/index.js");
 const cookieParser = require("cookie-parser");
+
+
+
+const authRoute = require("./Routes/authRoute.js");
+const userRoute = require("./Routes/userRoute.js");
 
 //configuring .env
 dotenv.config();
@@ -17,6 +21,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
 
 //routes
+app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/user", userRoute);
 
 //default get

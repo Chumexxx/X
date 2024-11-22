@@ -1,18 +1,12 @@
 const express = require("express");
+const protectRoute = require("../Middleware/protectRoute.js");
 const userRouter = express.Router();
-const userController = require("../Controllers/userController.js");
-const protectRoute = require("../Middleware/protectRoute.js")
+const userController = require("../Controllers/userController.js")
 
-userRouter.get("/", (req, res) => {
-    res.send("welcome to the user route")
-});
 
-userRouter.get("/me", protectRoute, userController.getMe);
+userRouter.get("/profile/:userName", protectRoute, userController.getUserProfile);
+// userRouter.get("/suggested", protectRoute, userController.getUserProfile);
+userRouter.post("/follow/:id", protectRoute, userController.followOrUnfollowUser);
+// userRouter.post("/update", protectRoute, userController.updateUserProfile);
 
-userRouter.post("/signUp", userController.signUp);
-
-userRouter.post("/logIn", userController.logIn);
-
-userRouter.post("/logOut", userController.logOut);
-
-module.exports =  userRouter;
+module.exports = userRouter;
