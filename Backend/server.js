@@ -4,8 +4,7 @@ const dotenv = require("dotenv");
 const ApplicationDB = require("./Config/index.js");
 const cookieParser = require("cookie-parser");
 
-
-
+//importing routes
 const authRoute = require("./Routes/authRoute.js");
 const userRoute = require("./Routes/userRoute.js");
 
@@ -22,7 +21,7 @@ app.use(cookieParser());
 
 //routes
 app.use("/api/v1/auth", authRoute);
-app.use("/api/v1/user", userRoute);
+app.use("/api/v1/users", userRoute);
 
 //default get
 app.get("/", (req, res) => {
