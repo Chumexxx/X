@@ -3,6 +3,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const ApplicationDB = require("./Config/index.js");
 const cookieParser = require("cookie-parser");
+const cloudinary = require("cloudinary").v2
 
 //importing routes
 const authRoute = require("./Routes/authRoute.js");
@@ -10,6 +11,11 @@ const userRoute = require("./Routes/userRoute.js");
 
 //configuring .env
 dotenv.config();
+cloudinary.config({
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET
+})
 
 //getting express ready for use
 const app = express();
