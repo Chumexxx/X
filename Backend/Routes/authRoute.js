@@ -4,7 +4,7 @@ const authController = require("../Controllers/authController.js");
 const protectRoute = require("../Middleware/protectRoute.js")
 
 authRouter.get("/", (req, res) => {
-    res.send("welcome to the user route")
+    res.send("welcome to the authentication route")
 });
 
 authRouter.get("/me", protectRoute, authController.getMe);

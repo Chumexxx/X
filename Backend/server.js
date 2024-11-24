@@ -8,6 +8,7 @@ const cloudinary = require("cloudinary").v2
 //importing routes
 const authRoute = require("./Routes/authRoute.js");
 const userRoute = require("./Routes/userRoute.js");
+const postRoute = require("./Routes/postRoute.js");
 
 //configuring .env
 dotenv.config();
@@ -28,6 +29,8 @@ app.use(cookieParser());
 //routes
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
+app.use("/api/v1/posts", postRoute);
+
 
 //default get
 app.get("/", (req, res) => {
