@@ -36,7 +36,11 @@ const createPost = async (req, res) => {
 }
 
 const deletePost = async (req, res) => {
+    try{
 
+    } catch (error){
+        
+    }
 }
 
 module.exports = {
