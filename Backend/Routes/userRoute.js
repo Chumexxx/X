@@ -4,6 +4,8 @@ const userRouter = express.Router();
 const userController = require("../Controllers/userController.js")
 
 
+userRouter.get("/profile/allProfiles", protectRoute, userController.getAllProfiles);
+
 userRouter.get("/profile/:userName", protectRoute, userController.getUserProfile);
 
 userRouter.get("/suggested", protectRoute, userController.getSuggestedUsers);

@@ -7,6 +7,20 @@ const bcrypt = require("bcryptjs")
 //importing cloudinary
 const cloudinary = require("cloudinary").v2
 
+const getAllProfiles = async (req, res) => {
+
+    User.find().then((data) => {
+        console.log(data);
+
+        return res.json({
+            message: "List of Users",
+            data
+        })
+    }). catch(err => 
+        console.log(err)
+    )
+}
+
 const getUserProfile = async (req, res) => {
     const { userName } = req.params;
 
@@ -173,6 +187,7 @@ const updateUser = async (req, res) => {
 }
 
 module.exports = {
+    getAllProfiles,
     getUserProfile,
     followOrUnfollowUser,
     getSuggestedUsers,
