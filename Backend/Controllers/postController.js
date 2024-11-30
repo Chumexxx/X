@@ -1,5 +1,7 @@
 const Post = require("../Models/postModel.js")
 const User = require("../Models/userModel.js")
+const Notification = require("../Models/notificationModel.js");
+const { sortAndDeduplicateDiagnostics } = require("typescript");
 // const cloudinary = require("cloudinary").v2
 
 const createPost = async (req, res) => {
@@ -65,7 +67,7 @@ const commentOnPost = async (req, res) => {
     try{
         const {text} = req.body
         const postId = req.params.id
-        const userId = req.user._id
+        const userId = req.user?._id
 
         if(!text) {
             return res.status(400).json({ error: "Text field is required"})
@@ -77,7 +79,7 @@ const commentOnPost = async (req, res) => {
             return res.status(404).json({ error: "Post not found"})
         }
 
-        const comment = {user: userId, text}
+        const comment = {User: userId, text}
 
         post.comments.push(comment)
         await post.save();
@@ -90,8 +92,62 @@ const commentOnPost = async (req, res) => {
     }
 }
 
+const likeOrUnlikePost = async (req, res) => {
+    try{
+        const userId = req.user._id
+        const {id:postId} = req.params
+
+        const post = await Post.findById(postId)
+
+        if(!post){
+            return res.status(404).json({ error: "post not found"})
+        }
+
+        const userLikedPost = post.likes.includes(userId);
+        if(userLikedPost){
+            //unlike post
+            await Post.updateOne({_id:postId}, {$pull: {likes: userId}})
+            res.status(200).json({ message: "Post unliked successfully"})
+        } else{
+            //like post
+            post.likes.push(userId);
+            await post.save();
+
+            const notification = new Notification({
+                from: userId,
+                to: post.user,
+                type: "like"
+            })
+
+            await notification.save();
+            res.status(200).json({ message: "Post liked successfully"})
+        }
+    }catch (error){
+        console.log( "Error in likeOrUnlikeController: ", error)
+        res.status(500).json({ error: "Internal server error "})
+    }
+
+}
+
+const getAllPosts = async (req, res) => {
+    try{
+        const posts = await Post.find().sort({ createdAt: -1 })
+
+        if(posts.length === 0){
+            return res.status(200).json([])
+        }
+
+        res.status(200).json(posts)
+    } catch(error){
+        console.log("Error in getAllPostsController: ", error)
+        res.status(500).json({ error: "Internal server error"})
+    }
+}
+
 module.exports = {
     createPost,
     deletePost,
-    commentOnPost
+    commentOnPost,
+    likeOrUnlikePost,
+    getAllPosts
 }
