@@ -1,7 +1,6 @@
 const Post = require("../Models/postModel.js")
 const User = require("../Models/userModel.js")
 const Notification = require("../Models/notificationModel.js");
-const { sortAndDeduplicateDiagnostics } = require("typescript");
 // const cloudinary = require("cloudinary").v2
 
 const createPost = async (req, res) => {
@@ -107,10 +106,12 @@ const likeOrUnlikePost = async (req, res) => {
         if(userLikedPost){
             //unlike post
             await Post.updateOne({_id:postId}, {$pull: {likes: userId}})
+            await User.updateOne({ _id: userId }, {$pull: {likedPosts: postId} })
             res.status(200).json({ message: "Post unliked successfully"})
         } else{
             //like post
             post.likes.push(userId);
+            await User.updateOne({ _id: userId }, {$pull: {likedPosts: postId} })
             await post.save();
 
             const notification = new Notification({
@@ -131,7 +132,14 @@ const likeOrUnlikePost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
     try{
-        const posts = await Post.find().sort({ createdAt: -1 })
+        const posts = await Post.find().sort({ createdAt: -1 }).populate({
+            path: "user",
+            select: "-password"
+        })
+        .populate({
+            path: "comments.User",
+            select: "-password"
+        })
 
         if(posts.length === 0){
             return res.status(200).json([])
@@ -144,10 +152,37 @@ const getAllPosts = async (req, res) => {
     }
 }
 
+const getLikedPosts = async (req, res) => {
+    const userId = req.params.id;
+    try{
+        const user = await User.findById(userId)
+        if(!user){
+            return res.status(400).json({ error: "User not found"})
+        }
+
+        const likedPosts = await Post.find({ _id: {$in: user.likedPosts}})
+        .populate({
+            path: "user",
+            select: "-password"
+        }).populate({
+            path: "comments.User",
+            select: "-password"
+        })
+
+        res.status(200).json(likedPosts);
+
+    } catch (error) {
+        console.log("Error in getLikedPosts controller", error)
+        res.status(500).json({ error: "Internal server error"})
+    }
+
+}
+
 module.exports = {
     createPost,
     deletePost,
     commentOnPost,
     likeOrUnlikePost,
-    getAllPosts
+    getAllPosts,
+    getLikedPosts
 }
