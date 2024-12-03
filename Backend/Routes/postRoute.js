@@ -5,7 +5,11 @@ const protectRoute = require("../Middleware/protectRoute.js")
 
 postRouter.get("/all", protectRoute, postController.getAllPosts)
 
+postRouter.get("/following", protectRoute, postController.getFollowingPosts)
+
 postRouter.get("/likes/:id", protectRoute, postController.getLikedPosts)
+
+postRouter.get("/user/:username", protectRoute, postController.getUserPosts)
 
 postRouter.post("/create", protectRoute, postController.createPost)
 
